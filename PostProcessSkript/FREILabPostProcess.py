@@ -25,6 +25,12 @@ def read_extruded_weight(gcode):
     match = re.search(pattern, gcode)
     return float(match.group(1)) if match else None
 
+# Function to extract filament type
+def extract_filament_type(gcode):
+    pattern = r";\s*filament_type\s*=\s*(PETG|PLA|TPU)"
+    match = re.search(pattern, gcode)
+    return match.group(1) if match else "Unknown"
+
 # Read the entire G-code file into memory
 with open(sourceFile, "r") as f:
     lines = f.read()
@@ -32,6 +38,7 @@ with open(sourceFile, "r") as f:
 # Get the extruded length and weight
 extruded_length = read_extruded_length(lines) / 1000
 extruded_weight = read_extruded_weight(lines)
+filament_type = extract_filament_type(lines)
 
 
 # Function to display the result in a Tkinter window
@@ -62,6 +69,10 @@ def wait_for_ok(extruded_length, extruded_weight):
     # Display Filament Weight
     weight_label = tk.Label(params_frame, text=f"Filament Gewicht: {extruded_weight:.2f} g", font=("Arial", 14))
     weight_label.grid(row=1, column=0, sticky="w", pady=5)
+
+    # Display Filament Type
+    filament_label = tk.Label(params_frame, text=f"Filament Typ: {filament_type}", font=("Arial", 14))
+    filament_label.grid(row=2, column=0, sticky="w", pady=5)
 
     # OK Button to close the window
     ok_button = tk.Button(root, text="OK", command=root.destroy, font=("Arial", 12))
