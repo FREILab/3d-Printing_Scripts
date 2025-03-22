@@ -21,7 +21,7 @@ def read_extruded_length(gcode):
 
 # Function to read the weight of the extruded filament
 def read_extruded_weight(gcode):
-    pattern = r";\s*filament used\s*\[g\]\s*=\s*(\d+\.\d+|\d+)"
+    pattern = r";\s*total filament used\s*\[g\]\s*=\s*(\d+\.\d+|\d+)"
     match = re.search(pattern, gcode)
     return float(match.group(1)) if match else None
 
@@ -31,6 +31,12 @@ def extract_filament_type(gcode):
     match = re.search(pattern, gcode)
     return match.group(1) if match else "Unknown"
 
+# Function to extract filament cost
+def extract_filament_cost(gcode):
+    pattern = r";\s*total filament cost\s*=\s*(\d+\.\d+|\d+)"
+    match = re.search(pattern, gcode)
+    return float(match.group(1)) if match else None
+
 # Read the entire G-code file into memory
 with open(sourceFile, "r") as f:
     lines = f.read()
@@ -39,6 +45,7 @@ with open(sourceFile, "r") as f:
 extruded_length = read_extruded_length(lines) / 1000
 extruded_weight = read_extruded_weight(lines)
 filament_type = extract_filament_type(lines)
+filament_cost = extract_filament_cost(lines)
 
 
 # Function to display the result in a Tkinter window
@@ -73,6 +80,28 @@ def wait_for_ok(extruded_length, extruded_weight):
     # Display Filament Type
     filament_label = tk.Label(params_frame, text=f"Filament Typ: {filament_type}", font=("Arial", 14))
     filament_label.grid(row=2, column=0, sticky="w", pady=5)
+
+    # Display Filament Cost
+    if filament_cost is not None:
+        cost_label = tk.Label(params_frame, text=f"Filament Kosten: {filament_cost:.2f} €", font=("Arial", 14))
+        cost_label.grid(row=3, column=0, sticky="w", pady=5)
+    else:
+        cost_label = tk.Label(params_frame, text="Filament Kosten: N/A", font=("Arial", 14))
+        cost_label.grid(row=3, column=0, sticky="w", pady=5)
+
+    # Add an empty line after the cost
+    empty_label = tk.Label(params_frame, text="", font=("Arial", 14))
+    empty_label.grid(row=4, column=0, sticky="w", pady=5)
+
+    # Add the "Bitte <filament_cost>€ in die Kasse einwerfen" line with larger red text
+    if filament_cost is not None:
+        cost_message_label = tk.Label(params_frame, text=f"Bitte {filament_cost:.2f}€ in die Kasse einwerfen", 
+                                      font=("Arial", 16, "bold"), fg="red")
+        cost_message_label.grid(row=5, column=0, sticky="w", pady=5)
+    else:
+        cost_message_label = tk.Label(params_frame, text="Bitte Filament Kosten in die Kasse einwerfen", 
+                                      font=("Arial", 16, "bold"), fg="red")
+        cost_message_label.grid(row=5, column=0, sticky="w", pady=5)
 
     # OK Button to close the window
     ok_button = tk.Button(root, text="OK", command=root.destroy, font=("Arial", 12))
